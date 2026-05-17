@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
   PostgreSqlContainer,
@@ -9,14 +8,17 @@ import {
 } from '@testcontainers/postgresql';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { ConfigModule } from '@nestjs/config';
+import { OrdersModule } from '../../src/orders/orders.module';
 import { ArticlesModule } from '../../src/articles/articles.module';
+import { Order } from '../../src/orders/entities/order.entity';
+import { OrderItem } from '../../src/orders/entities/order-item.entity';
 import { Article } from '../../src/articles/entities/article.entity';
+import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from '../../src/auth/auth.module';
-import { User, UserRole } from '../../src/users/entities/user.entity';
 import { UsersModule } from '../../src/users/users.module';
+import { User, UserRole } from '../../src/users/entities/user.entity';
 
-describe('ArticlesController (integration)', () => {
+describe('OrdersController (integration)', () => {
   let app: INestApplication<App>;
   let container: StartedPostgreSqlContainer;
   let adminToken: string;
@@ -32,9 +34,10 @@ describe('ArticlesController (integration)', () => {
         TypeOrmModule.forRoot({
           type: 'postgres',
           url: container.getConnectionUri(),
-          entities: [Article, User],
+          entities: [Order, OrderItem, Article, User],
           synchronize: true,
         }),
+        OrdersModule,
         ArticlesModule,
         UsersModule,
         AuthModule,
@@ -58,7 +61,7 @@ describe('ArticlesController (integration)', () => {
       .post('/auth/login')
       .send({ email: 'admin@test.com', password: 'admin123' });
 
-    adminToken = loginRes.body.accessToken;
+    adminToken = (loginRes.body as { accessToken: string }).accessToken;
   }, 60000);
 
   afterAll(async () => {
@@ -66,56 +69,23 @@ describe('ArticlesController (integration)', () => {
     await container.stop();
   });
 
-  it('POST /articles should create article', async () => {
+  it('GET /orders should return empty array', async () => {
     const res = await request(app.getHttpServer())
-      .post('/articles')
+      .get('/orders')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ name: 'Pencil', quantity: 10, price: 29.99 })
-      .expect(201);
-
-    expect(res.body.name).toBe('Pencil');
-    expect(res.body.quantity).toBe(10);
-  });
-
-  it('GET /articles should return all articles', async () => {
-    const res = await request(app.getHttpServer()).get('/articles').expect(200);
-
-    expect(res.body).toHaveLength(1);
-  });
-
-  it('GET /articles/:id should return one article', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/articles/1')
       .expect(200);
 
-    expect(res.body.name).toBe('Pencil');
+    expect(res.body).toEqual([]);
   });
 
-  it('POST /articles without token should return 401', async () => {
+  it('GET /orders/:id should return 404 for non-existent order', async () => {
     await request(app.getHttpServer())
-      .post('/articles')
-      .send({ name: 'Test', quantity: 1, price: 9.99 })
-      .expect(401);
-  });
-
-  it('PATCH /articles/:id should update article', async () => {
-    const res = await request(app.getHttpServer())
-      .patch('/articles/1')
+      .get('/orders/999')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ quantity: 5 })
-      .expect(200);
-
-    expect(res.body.quantity).toBe(5);
+      .expect(404);
   });
 
-  it('DELETE /articles/:id should delete article', async () => {
-    await request(app.getHttpServer())
-      .delete('/articles/1')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .expect(200);
-  });
-
-  it('GET /articles/:id should return 404 after delete', async () => {
-    await request(app.getHttpServer()).get('/articles/1').expect(404);
+  it('GET /orders without token should return 401', async () => {
+    await request(app.getHttpServer()).get('/orders').expect(401);
   });
 });
