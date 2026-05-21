@@ -26,3 +26,17 @@ export const getArticleById = async (id: number) => {
   const response = await api.get<Article>(`/articles/${id}`);
   return response.data;
 };
+
+export const createArticle = async (data: Partial<Article>) => {
+  const response = await api.post<Article>('/articles', data);
+  return response.data;
+};
+
+export const updateArticle = async (id: number, data: Partial<Article>) => {
+  const response = await api.patch<Article>(`/articles/${id}`, data);
+  return response.data;
+};
+
+export const deleteArticle = async (id: number) => {
+  await api.delete(`/articles/${id}`);
+};

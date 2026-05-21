@@ -4,6 +4,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
 const CartCounter = dynamic(() => import('./CartCounter'), { ssr: false });
+const AuthLinks = dynamic(() => import('./AuthLinks'), { ssr: false });
 
 export function Navbar() {
   return (
@@ -21,9 +22,7 @@ export function Navbar() {
             <CartCounter />
           </Link>
           
-          <Link href="/login" className="font-medium text-gray-700 hover:text-blue-600 transition">
-            Login
-          </Link>
+          <AuthLinks />
         </div>
       </div>
     </nav>
