@@ -30,6 +30,12 @@ export interface PaginatedOrdersResponse {
   totalPages: number;
 }
 
+export interface CreateOrderPayload {
+  walletAddress: string;
+  txHash: string;
+  items: { articleId: number; quantity: number }[];
+}
+
 export const getOrders = async (page = 1, limit = 10, status?: string, from?: string, to?: string) => {
   const params: Record<string, string | number> = { page, limit };
   if (status) params.status = status;
@@ -42,5 +48,10 @@ export const getOrders = async (page = 1, limit = 10, status?: string, from?: st
 
 export const getOrderById = async (id: number) => {
   const response = await api.get<Order>(`/orders/${id}`);
+  return response.data;
+};
+
+export const createCheckout = async (data: CreateOrderPayload) => {
+  const response = await api.post('/orders/checkout', data);
   return response.data;
 };

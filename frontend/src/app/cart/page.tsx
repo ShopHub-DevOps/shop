@@ -75,9 +75,22 @@ export default function CartPage() {
           </tbody>
         </table>
         
-        <div className="p-6 bg-gray-50 border-t flex justify-between items-center">
+        {/*<div className="p-6 bg-gray-50 border-t flex justify-between items-center">
           <span className="text-xl font-semibold text-gray-700">Running Total:</span>
           <span className="text-3xl font-bold text-gray-900">${getTotalPrice().toFixed(2)}</span>
+
+        </div>*/}
+        <div className="p-6 bg-slate-100 border-t-2 border-slate-300 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-4">
+            <span className="text-xl font-bold text-slate-800">Running Total:</span>
+            <span className="text-3xl font-black text-black">${getTotalPrice().toFixed(2)}</span>
+          </div>
+          <Link 
+            href="/checkout"
+            className="bg-blue-600 text-white font-extrabold px-8 py-3 rounded-lg hover:bg-blue-800 transition shadow-md"
+          >
+            Proceed to Checkout
+          </Link>
         </div>
       </div>
     </div>

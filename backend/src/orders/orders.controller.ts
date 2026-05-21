@@ -1,8 +1,10 @@
 import {
+    Body,
   Controller,
   Get,
   Param,
   ParseIntPipe,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -11,6 +13,7 @@ import { Order, OrderStatus } from './entities/order.entity';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -34,5 +37,10 @@ export class OrdersController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<Order> {
     return this.ordersService.findOne(id);
+  }
+
+  @Post('checkout')
+  createCheckout(@Body() createOrderDto: CreateOrderDto) {
+    return this.ordersService.createCheckout(createOrderDto);
   }
 }

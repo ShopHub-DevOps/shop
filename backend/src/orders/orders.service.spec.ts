@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { Order, OrderStatus } from './entities/order.entity';
+import { Article } from '../articles/entities/article.entity';
 
 const mockOrder: Order = {
   id: 1,
@@ -27,6 +28,11 @@ const mockRepository = {
   findOne: jest.fn(),
 };
 
+const mockArticleRepository = {
+  findOne: jest.fn(),
+  save: jest.fn(),
+};
+
 describe('OrdersService', () => {
   let service: OrdersService;
 
@@ -37,6 +43,10 @@ describe('OrdersService', () => {
         {
           provide: getRepositoryToken(Order),
           useValue: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(Article),
+          useValue: mockArticleRepository,
         },
       ],
     }).compile();
