@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { Article } from './entities/article.entity';
+import { ILike } from 'typeorm';
 
 const mockArticle: Article = {
   id: 1,
@@ -14,6 +15,7 @@ const mockArticle: Article = {
 const mockRepository = {
   find: jest.fn(),
   findOneBy: jest.fn(),
+  findAndCount: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
   update: jest.fn(),
@@ -38,12 +40,55 @@ describe('ArticlesService', () => {
     jest.clearAllMocks();
   });
 
+  // describe('findAll', () => {
+  //   it('should return all articles', async () => {
+  //     mockRepository.find.mockResolvedValue([mockArticle]);
+  //     const result = await service.findAll();
+  //     expect(result).toEqual([mockArticle]);
+  //     expect(mockRepository.find).toHaveBeenCalledTimes(1);
+  //   });
+  // });
+
   describe('findAll', () => {
-    it('should return all articles', async () => {
-      mockRepository.find.mockResolvedValue([mockArticle]);
-      const result = await service.findAll();
-      expect(result).toEqual([mockArticle]);
-      expect(mockRepository.find).toHaveBeenCalledTimes(1);
+    it('should return paginated', async () => {
+      const mockArticles = [mockArticle];
+      const mockTotal = 1;
+
+      mockRepository.findAndCount.mockResolvedValue([mockArticles, mockTotal]);
+
+      const result = await service.findAll(1, 10, '');
+
+      expect(result).toEqual({
+        data: mockArticles,
+        total: mockTotal,
+        page: 1,
+        limit: 10,
+        totalPages: 1, // Math.ceil(1 / 10)
+      });
+
+      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
+        where: {},
+        take: 10,
+        skip: 0,
+        order: { id: 'DESC' },
+      });
+    });
+
+    it('search filter applied', async () => {
+      const mockArticles = [mockArticle];
+      const mockTotal = 1;
+      const searchTerm = 'laptop';
+
+      mockRepository.findAndCount.mockResolvedValue([mockArticles, mockTotal]);
+
+      await service.findAll(1, 10, searchTerm);
+
+      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
+        where: { name: ILike(`%${searchTerm}%`) },
+        take: 10,
+        skip: 0,
+        order: { id: 'DESC' },
+      });
     });
   });
 
