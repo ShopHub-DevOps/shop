@@ -20,11 +20,13 @@ export class OrdersController {
   @Roles('admin')
   @Get()
   findAll(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
     @Query('status') status?: OrderStatus,
     @Query('from') from?: string,
     @Query('to') to?: string,
-  ): Promise<Order[]> {
-    return this.ordersService.findAll(status, from, to);
+  ) {
+    return this.ordersService.findAll(+page, +limit, status, from, to);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

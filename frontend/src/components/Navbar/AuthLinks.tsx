@@ -17,9 +17,11 @@ export default function AuthLinks() {
     return (
       <div className="flex items-center gap-6 border-l pl-6 border-gray-200">
         {isAdmin() && (
-          <Link href="/admin/articles" className="font-medium text-gray-700 hover:text-blue-600 transition">
-            Admin Panel
-          </Link>
+          <><Link href="/admin/articles" className="font-medium text-slate-800 hover:text-black transition">
+                    Admin Panel
+                </Link><Link href="/admin/orders" className="font-medium text-slate-800 hover:text-black transition">
+                        Orders
+                    </Link></>
         )}
         <button
           onClick={handleLogout}

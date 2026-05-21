@@ -11,10 +11,12 @@ export class OrdersService {
   ) {}
 
   async findAll(
+    page: number = 1,
+    limit: number = 10,
     status?: OrderStatus,
     from?: string,
     to?: string,
-  ): Promise<Order[]> {
+  ) {
     const qb = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.items', 'items')
@@ -33,7 +35,18 @@ export class OrdersService {
       qb.andWhere('order.createdAt <= :to', { to: new Date(to) });
     }
 
-    return qb.getMany();
+    // Paginacija
+    qb.take(limit).skip((page - 1) * limit);
+
+    const [data, total] = await qb.getManyAndCount();
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: number): Promise<Order> {
