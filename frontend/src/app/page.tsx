@@ -47,9 +47,9 @@ export default function ShopPage() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="border-2 border-gray-200 p-3 pl-10 rounded-lg w-full focus:outline-none focus:border-blue-500 transition-colors"
+            className="border-2 border-gray-200 p-3 pl-10 rounded-lg w-full focus:outline-none focus:border-blue-500 transition-colors text-black font-semibold placeholder:text-slate-700"
           />
-          <svg className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-slate-800 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
@@ -60,7 +60,7 @@ export default function ShopPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       ) : articles.length === 0 ? (
-        <div className="text-center py-20 text-gray-500 bg-gray-50 rounded-lg">
+        <div className="text-center py-20 text-black font-bold bg-slate-100 rounded-lg">
           No articles match your search.
         </div>
       ) : (
@@ -79,17 +79,17 @@ export default function ShopPage() {
             <button
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
-              className="px-6 py-2 border-2 rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition"
+              className="px-6 py-2 border-2 border-slate-800 text-slate-900 font-extrabold rounded-lg hover:bg-slate-800 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-900 transition"
             >
               Previous
             </button>
-            <span className="font-medium text-gray-600">
+            <span className="font-extrabold text-black text-lg">
               Page {page} of {totalPages}
             </span>
             <button
               disabled={page === totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="px-6 py-2 border-2 rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition"
+              className="px-6 py-2 border-2 border-slate-800 text-slate-900 font-extrabold rounded-lg hover:bg-slate-800 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-900 transition"
             >
               Next
             </button>

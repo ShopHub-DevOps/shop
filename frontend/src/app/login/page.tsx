@@ -31,7 +31,7 @@ export default function LoginPage() {
   return (
     <div className="container mx-auto p-4 flex justify-center items-center min-h-[70vh]">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md border">
-        <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Admin Login</h1>
+        <h1 className="text-3xl font-extrabold mb-6 text-center text-black">Admin Login</h1>
         
         {error && (
           <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm border border-red-200">
@@ -41,24 +41,24 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <label className="block text-sm font-bold mb-1 text-slate-900">Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none text-black font-semibold"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-bold mb-1 text-slate-900">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none text-black font-semibold"
             />
           </div>
 

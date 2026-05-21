@@ -35,7 +35,7 @@ export default function AuthLinks() {
 
   return (
     <div className="border-l pl-6 border-gray-200">
-      <Link href="/login" className="font-medium text-gray-700 hover:text-blue-600 transition">
+      <Link href="/login" className="font-bold text-slate-900 hover:text-blue-600 transition">
         Login
       </Link>
     </div>

@@ -9,7 +9,7 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="container mx-auto p-4 flex flex-col items-center justify-center min-h-[60vh]">
-        <h1 className="text-2xl font-bold mb-4 text-gray-800">Your cart is empty</h1>
+        <h1 className="text-3xl font-extrabold mb-4 text-black">Your cart is empty</h1>
         <Link href="/" className="text-blue-600 hover:underline font-medium">
           Go back to shop
         </Link>
@@ -19,16 +19,16 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto p-4 max-w-4xl mt-8">
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">Shopping Cart</h1>
+      <h1 className="text-4xl font-extrabold mb-8 text-black">Shopping Cart</h1>
       
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="p-4 font-semibold text-gray-600">Product</th>
-              <th className="p-4 font-semibold text-gray-600 text-center">Quantity</th>
-              <th className="p-4 font-semibold text-gray-600 text-right">Price</th>
-              <th className="p-4 font-semibold text-gray-600 text-right">Total</th>
+              <th className="p-4 font-bold text-slate-900">Product</th>
+              <th className="p-4 font-bold text-slate-900 text-center">Quantity</th>
+              <th className="p-4 font-bold text-slate-900 text-right">Price</th>
+              <th className="p-4 font-bold text-slate-900 text-right">Total</th>
               <th className="p-4"></th>
             </tr>
           </thead>
@@ -37,7 +37,7 @@ export default function CartPage() {
               <tr key={item.id} className="border-b last:border-b-0">
                 <td className="p-4">
                   <span className="font-medium text-lg block">{item.name}</span>
-                  <span className="text-sm text-gray-500">Max stock: {item.maxStock}</span>
+                  <span className="block text-sm font-bold mt-1 text-slate-900">Max stock: {item.maxStock}</span>
                 </td>
                 <td className="p-4">
                   <div className="flex items-center justify-center gap-3">
@@ -58,8 +58,8 @@ export default function CartPage() {
                     </button>
                   </div>
                 </td>
-                <td className="p-4 text-right text-gray-600">${Number(item.price).toFixed(2)}</td>
-                <td className="p-4 text-right font-semibold text-gray-800">
+                <td className="p-4 text-right font-extrabold text-black">${Number(item.price).toFixed(2)}</td>
+                <td className="p-4 text-right font-extrabold text-black">
                   ${(Number(item.price) * item.quantity).toFixed(2)}
                 </td>
                 <td className="p-4 text-right">

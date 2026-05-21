@@ -10,8 +10,8 @@ export default function ArticleCard({ article, onSelect }: Props) {
 
   return (
     <div className="group relative border p-4 rounded-lg shadow bg-white hover:border-blue-300 transition-colors">
-      <h3 className="font-semibold text-lg truncate">{article.name}</h3>
-      <p className="text-gray-600 mt-2 font-medium">${Number(article.price).toFixed(2)}</p>
+      <h3 className="font-extrabold text-black text-xl truncate">{article.name}</h3>
+      <p className="text-black mt-2 font-extrabold">${Number(article.price).toFixed(2)}</p>
       
       <div className="mt-2 text-sm">
         {inStock ? (
