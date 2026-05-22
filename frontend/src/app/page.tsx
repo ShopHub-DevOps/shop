@@ -1,65 +1,106 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useEffect, useState } from 'react';
+import { getArticles, Article } from '@/lib/api/articles';
+import ArticleCard from '@/components/ArticleCard';
+import { AddToCartModal } from '@/components/AddToCartModal';
+
+export default function ShopPage() {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+
+  const fetchArticles = async () => {
+    setLoading(true);
+    try {
+      const res = await getArticles(page, 10, search);
+      setArticles(res.data);
+      setTotalPages(res.totalPages);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchArticles();
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [search, page]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="container mx-auto p-4 relative min-h-screen">
+      <div className="mb-8 max-w-xl mx-auto">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search articles by name..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="border-2 border-gray-200 p-3 pl-10 rounded-lg w-full focus:outline-none focus:border-blue-500 transition-colors text-black font-semibold placeholder:text-slate-700"
+          />
+          <svg className="w-5 h-5 text-slate-800 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      </main>
+      ) : articles.length === 0 ? (
+        <div className="text-center py-20 text-black font-bold bg-slate-100 rounded-lg">
+          No articles match your search.
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {articles.map((article) => (
+              <ArticleCard 
+                key={article.id} 
+                article={article} 
+                onSelect={setSelectedArticle} 
+              />
+            ))}
+          </div>
+
+          <div className="flex justify-center items-center gap-6 mt-12 mb-8">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+              className="px-6 py-2 border-2 border-slate-800 text-slate-900 font-extrabold rounded-lg hover:bg-slate-800 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-900 transition"
+            >
+              Previous
+            </button>
+            <span className="font-extrabold text-black text-lg">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => p + 1)}
+              className="px-6 py-2 border-2 border-slate-800 text-slate-900 font-extrabold rounded-lg hover:bg-slate-800 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-900 transition"
+            >
+              Next
+            </button>
+          </div>
+        </>
+      )}
+
+      <AddToCartModal 
+        article={selectedArticle} 
+        onClose={() => setSelectedArticle(null)} 
+      />
     </div>
   );
 }

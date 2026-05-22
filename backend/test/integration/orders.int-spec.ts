@@ -69,13 +69,19 @@ describe('OrdersController (integration)', () => {
     await container.stop();
   });
 
-  it('GET /orders should return empty array', async () => {
+  it('GET /orders should return paginated empty result', async () => {
     const res = await request(app.getHttpServer())
       .get('/orders')
       .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
-    expect(res.body).toEqual([]);
+    expect(res.body).toEqual({
+      data: [],
+      total: 0,
+      page: 1,
+      limit: 10,
+      totalPages: 0,
+    });
   });
 
   it('GET /orders/:id should return 404 for non-existent order', async () => {

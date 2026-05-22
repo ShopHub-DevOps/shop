@@ -77,10 +77,20 @@ describe('ArticlesController (integration)', () => {
     expect(res.body.quantity).toBe(10);
   });
 
-  it('GET /articles should return all articles', async () => {
+  // it('GET /articles should return all articles', async () => {
+  //   const res = await request(app.getHttpServer()).get('/articles').expect(200);
+
+  //   expect(res.body).toHaveLength(1);
+  // });
+
+  it('GET /articles should return paginated articles', async () => {
     const res = await request(app.getHttpServer()).get('/articles').expect(200);
 
-    expect(res.body).toHaveLength(1);
+    // Proveravamo dužinu niza unutar 'data' property-ja
+    expect(res.body.data).toHaveLength(1);
+    // Opciono: možemo proveriti i da li su se vratili ispravni metapodaci
+    expect(res.body.total).toBe(1);
+    expect(res.body.page).toBe(1);
   });
 
   it('GET /articles/:id should return one article', async () => {

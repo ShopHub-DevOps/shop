@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
@@ -19,9 +20,18 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
+  //@Get()
+  //findAll(): Promise<Article[]> {
+  // //return this.articlesService.findAll();
+  //}
+
   @Get()
-  findAll(): Promise<Article[]> {
-    return this.articlesService.findAll();
+  findAll(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('search') search: string = '',
+  ) {
+    return this.articlesService.findAll(+page, +limit, search);
   }
 
   @Get(':id')

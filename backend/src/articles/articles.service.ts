@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Article } from './entities/article.entity';
 
 @Injectable()
@@ -10,8 +10,25 @@ export class ArticlesService {
     private readonly articleRepository: Repository<Article>,
   ) {}
 
-  findAll(): Promise<Article[]> {
-    return this.articleRepository.find();
+  //findAll(): Promise<Article[]> {
+  //return this.articleRepository.find();
+  //}
+
+  async findAll(page: number, limit: number, search: string) {
+    const [data, total] = await this.articleRepository.findAndCount({
+      where: search ? { name: ILike(`%${search}%`) } : {},
+      take: limit,
+      skip: (page - 1) * limit,
+      order: { id: 'DESC' },
+    });
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: number): Promise<Article> {
