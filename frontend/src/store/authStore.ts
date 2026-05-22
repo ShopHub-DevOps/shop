@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { jwtDecode } from 'jwt-decode';
+import Cookies from 'js-cookie';
 
 interface JwtPayload {
   sub: number;
@@ -28,6 +29,7 @@ export const useAuthStore = create<AuthState>()(
 
       login: (token: string) => {
         const decoded = jwtDecode<JwtPayload>(token);
+        Cookies.set('token', token, { expires: 7 });
         set({
           token,
           email: decoded.email,
@@ -37,6 +39,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        Cookies.remove('token');
         set({
           token: null,
           email: null,
