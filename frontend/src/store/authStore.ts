@@ -14,7 +14,7 @@ interface AuthState {
   email: string | null;
   role: string | null;
   isLoggedIn: boolean;
-  login: (token: string) => void;
+  login: (token: string, explicitRole?: string) => void;
   logout: () => void;
   isAdmin: () => boolean;
 }
@@ -27,13 +27,13 @@ export const useAuthStore = create<AuthState>()(
       role: null,
       isLoggedIn: false,
 
-      login: (token: string) => {
+      login: (token: string, explicitRole?: string) => {
         const decoded = jwtDecode<JwtPayload>(token);
         Cookies.set('token', token, { expires: 7 });
         set({
           token,
           email: decoded.email,
-          role: decoded.role,
+          role: explicitRole || decoded.role,
           isLoggedIn: true,
         });
       },
