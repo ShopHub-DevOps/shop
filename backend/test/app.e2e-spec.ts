@@ -16,6 +16,7 @@ describe('AppController (e2e)', () => {
     container = await new PostgreSqlContainer('postgres:16-alpine').start();
 
     process.env.DATABASE_URL = container.getConnectionUri();
+    process.env.JWT_SECRET = 'test-secret';
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
