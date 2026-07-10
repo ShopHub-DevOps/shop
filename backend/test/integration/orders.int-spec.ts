@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
+import { DatabaseModule } from '../../src/database/database.module';
 import { Repository } from 'typeorm';
 import {
   PostgreSqlContainer,
@@ -27,16 +28,12 @@ describe('OrdersController (integration)', () => {
     container = await new PostgreSqlContainer('postgres:16-alpine').start();
 
     process.env.JWT_SECRET = 'test-secret';
+    process.env.DATABASE_URL = container.getConnectionUri();
 
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ isGlobal: true }),
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          url: container.getConnectionUri(),
-          entities: [Order, OrderItem, Article, User],
-          synchronize: true,
-        }),
+        DatabaseModule.register(),
         OrdersModule,
         ArticlesModule,
         UsersModule,
