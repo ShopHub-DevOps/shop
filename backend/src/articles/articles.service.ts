@@ -1,26 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Article } from './entities/article.entity';
+import { ARTICLE_REPOSITORY } from '../database/repositories/interfaces/article.repository.interface';
+import type { IArticleRepository } from '../database/repositories/interfaces/article.repository.interface';
 
 @Injectable()
 export class ArticlesService {
   constructor(
-    @InjectRepository(Article)
-    private readonly articleRepository: Repository<Article>,
+    @Inject(ARTICLE_REPOSITORY)
+    private readonly articleRepository: IArticleRepository,
   ) {}
 
-  //findAll(): Promise<Article[]> {
-  //return this.articleRepository.find();
-  //}
-
   async findAll(page: number, limit: number, search: string) {
-    const [data, total] = await this.articleRepository.findAndCount({
-      where: search ? { name: ILike(`%${search}%`) } : {},
-      take: limit,
-      skip: (page - 1) * limit,
-      order: { id: 'DESC' },
-    });
+    const { data, total } = await this.articleRepository.findAll(page, limit, search);
 
     return {
       data,
@@ -32,7 +23,7 @@ export class ArticlesService {
   }
 
   async findOne(id: number): Promise<Article> {
-    const article = await this.articleRepository.findOneBy({ id });
+    const article = await this.articleRepository.findById(id);
     if (!article) throw new NotFoundException(`Article #${id} not found`);
     return article;
   }

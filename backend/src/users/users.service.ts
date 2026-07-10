@@ -1,25 +1,25 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Inject, Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
+import { USER_REPOSITORY } from '../database/repositories/interfaces/user.repository.interface';
+import type { IUserRepository } from '../database/repositories/interfaces/user.repository.interface';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: IUserRepository,
   ) {}
 
   findByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findOneBy({ email });
+    return this.userRepository.findByEmail(email);
   }
 
   findByIdentity(email?: string, walletAddress?: string): Promise<User | null> {
     if (email) {
-      return this.userRepository.findOneBy({ email });
+      return this.userRepository.findByEmail(email);
     }
     if (walletAddress) {
-      return this.userRepository.findOneBy({ walletAddress });
+      return this.userRepository.findByWalletAddress(walletAddress);
     }
     return Promise.resolve(null);
   }
@@ -35,6 +35,7 @@ export class UsersService {
       return await this.userRepository.save(user);
     } catch (err: any) {
       // Handle PostgreSQL unique constraint violation (code 23505)
+      // Redis implementation simulates this by throwing an error with code '23505'
       if (err.code === '23505') {
         const existingUser = await this.findByIdentity(email, walletAddress);
         if (existingUser) return existingUser;

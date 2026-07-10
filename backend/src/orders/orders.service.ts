@@ -1,23 +1,25 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
-//import { OrderItem } from './entities/order-item.entity';
 import { ethers } from 'ethers';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Article } from '../articles/entities/article.entity';
+import { ORDER_REPOSITORY } from '../database/repositories/interfaces/order.repository.interface';
+import type { IOrderRepository } from '../database/repositories/interfaces/order.repository.interface';
+import { ARTICLE_REPOSITORY } from '../database/repositories/interfaces/article.repository.interface';
+import type { IArticleRepository } from '../database/repositories/interfaces/article.repository.interface';
 
 @Injectable()
 export class OrdersService {
   constructor(
-    @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
-    @InjectRepository(Article)
-    private readonly articleRepository: Repository<Article>,
+    @Inject(ORDER_REPOSITORY)
+    private readonly orderRepository: IOrderRepository,
+    @Inject(ARTICLE_REPOSITORY)
+    private readonly articleRepository: IArticleRepository,
   ) {}
 
   async findAll(
@@ -27,28 +29,7 @@ export class OrdersService {
     from?: string,
     to?: string,
   ) {
-    const qb = this.orderRepository
-      .createQueryBuilder('order')
-      .leftJoinAndSelect('order.items', 'items')
-      .leftJoinAndSelect('items.article', 'article')
-      .orderBy('order.createdAt', 'DESC');
-
-    if (status) {
-      qb.andWhere('order.status = :status', { status });
-    }
-
-    if (from) {
-      qb.andWhere('order.createdAt >= :from', { from: new Date(from) });
-    }
-
-    if (to) {
-      qb.andWhere('order.createdAt <= :to', { to: new Date(to) });
-    }
-
-    // Paginacija
-    qb.take(limit).skip((page - 1) * limit);
-
-    const [data, total] = await qb.getManyAndCount();
+    const { data, total } = await this.orderRepository.findAll(page, limit, status, from, to);
 
     return {
       data,
@@ -60,17 +41,12 @@ export class OrdersService {
   }
 
   async findOne(id: number): Promise<Order> {
-    const order = await this.orderRepository.findOne({
-      where: { id },
-      relations: ['items', 'items.article'],
-    });
+    const order = await this.orderRepository.findOneWithItems(id);
     if (!order) throw new NotFoundException(`Order #${id} not found`);
     return order;
   }
 
   async createCheckout(dto: CreateOrderDto): Promise<Order> {
-    //const itemsToSave = [];
-    //const itemsToSave: Partial<OrderItem>[] = [];
     const itemsToSave: {
       article: Article;
       quantity: number;
@@ -79,9 +55,7 @@ export class OrdersService {
     }[] = [];
 
     for (const item of dto.items) {
-      const article = await this.articleRepository.findOne({
-        where: { id: item.articleId },
-      });
+      const article = await this.articleRepository.findById(item.articleId);
       if (!article)
         throw new NotFoundException(`Article #${item.articleId} not found`);
       if (article.quantity < item.quantity) {
@@ -96,9 +70,7 @@ export class OrdersService {
       });
     }
 
-    // 2. Blockchain validation (Sepolia Testnet)
     try {
-      //const provider = new ethers.JsonRpcProvider('https://rpc.sepolia.org');
       const rpcUrl =
         process.env.RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com';
       const chainId = parseInt(process.env.CHAIN_ID || '11155111', 10);
@@ -130,7 +102,7 @@ export class OrdersService {
       status: OrderStatus.CONFIRMED,
       walletAddress: dto.walletAddress,
       txHash: dto.txHash,
-      items: itemsToSave,
+      items: itemsToSave as any,
     });
 
     const savedOrder = await this.orderRepository.save(order);
