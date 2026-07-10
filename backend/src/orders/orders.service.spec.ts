@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { Order, OrderStatus } from './entities/order.entity';
 import { Article } from '../articles/entities/article.entity';
+import { ORDER_REPOSITORY } from '../database/repositories/interfaces/order.repository.interface';
+import { ARTICLE_REPOSITORY } from '../database/repositories/interfaces/article.repository.interface';
 
 const mockOrder: Order = {
   id: 1,
@@ -14,22 +15,15 @@ const mockOrder: Order = {
   items: [],
 };
 
-const mockQueryBuilder = {
-  leftJoinAndSelect: jest.fn().mockReturnThis(),
-  orderBy: jest.fn().mockReturnThis(),
-  andWhere: jest.fn().mockReturnThis(),
-  take: jest.fn().mockReturnThis(),
-  skip: jest.fn().mockReturnThis(),
-  getManyAndCount: jest.fn().mockResolvedValue([[mockOrder], 1]),
-};
-
-const mockRepository = {
-  createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
-  findOne: jest.fn(),
+const mockOrderRepository = {
+  findAll: jest.fn(),
+  findOneWithItems: jest.fn(),
+  create: jest.fn(),
+  save: jest.fn(),
 };
 
 const mockArticleRepository = {
-  findOne: jest.fn(),
+  findById: jest.fn(),
   save: jest.fn(),
 };
 
@@ -41,11 +35,11 @@ describe('OrdersService', () => {
       providers: [
         OrdersService,
         {
-          provide: getRepositoryToken(Order),
-          useValue: mockRepository,
+          provide: ORDER_REPOSITORY,
+          useValue: mockOrderRepository,
         },
         {
-          provide: getRepositoryToken(Article),
+          provide: ARTICLE_REPOSITORY,
           useValue: mockArticleRepository,
         },
       ],
@@ -57,7 +51,7 @@ describe('OrdersService', () => {
 
   describe('findAll', () => {
     it('should return paginated orders', async () => {
-      mockQueryBuilder.getManyAndCount.mockResolvedValue([[mockOrder], 1]);
+      mockOrderRepository.findAll.mockResolvedValue({ data: [mockOrder], total: 1 });
       const result = await service.findAll(1, 10);
 
       expect(result).toEqual({
@@ -68,37 +62,33 @@ describe('OrdersService', () => {
         totalPages: 1,
       });
 
-      expect(mockQueryBuilder.take).toHaveBeenCalledWith(10);
-      expect(mockQueryBuilder.skip).toHaveBeenCalledWith(0);
+      expect(mockOrderRepository.findAll).toHaveBeenCalledWith(1, 10, undefined, undefined, undefined);
     });
 
     it('should filter by status', async () => {
-      mockQueryBuilder.getManyAndCount.mockResolvedValue([[mockOrder], 1]);
+      mockOrderRepository.findAll.mockResolvedValue({ data: [mockOrder], total: 1 });
       await service.findAll(1, 10, OrderStatus.PENDING);
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'order.status = :status',
-        { status: OrderStatus.PENDING },
-      );
+      expect(mockOrderRepository.findAll).toHaveBeenCalledWith(1, 10, OrderStatus.PENDING, undefined, undefined);
     });
 
     it('should filter by date range', async () => {
-      mockQueryBuilder.getManyAndCount.mockResolvedValue([[mockOrder], 1]);
+      mockOrderRepository.findAll.mockResolvedValue({ data: [mockOrder], total: 1 });
       await service.findAll(1, 10, undefined, '2026-01-01', '2026-12-31');
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledTimes(2);
+      expect(mockOrderRepository.findAll).toHaveBeenCalledWith(1, 10, undefined, '2026-01-01', '2026-12-31');
     });
   });
 
   describe('findOne', () => {
     it('should return order by id', async () => {
-      mockRepository.findOne.mockResolvedValue(mockOrder);
+      mockOrderRepository.findOneWithItems.mockResolvedValue(mockOrder);
       const result = await service.findOne(1);
       expect(result).toEqual(mockOrder);
     });
 
     it('should throw NotFoundException if order not found', async () => {
-      mockRepository.findOne.mockResolvedValue(null);
+      mockOrderRepository.findOneWithItems.mockResolvedValue(null);
       await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
     });
   });
