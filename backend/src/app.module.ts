@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { DatabaseModule } from './database/database.module';
 import { ArticlesModule } from './articles/articles.module';
 import { OrdersModule } from './orders/orders.module';
 import { AuthModule } from './auth/auth.module';
@@ -23,18 +24,7 @@ import { MetricsMiddleware } from './observability/metrics.middleware';
       isGlobal: true,
       envFilePath: '../.env',
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        url: config.get<string>('DATABASE_URL'),
-        autoLoadEntities: true,
-        synchronize: false,
-        migrationsRun: true,
-        migrations: [__dirname + '/../migrations/*{.ts,.js}'],
-      }),
-      inject: [ConfigService],
-    }),
+    DatabaseModule.register(),
     ArticlesModule,
     OrdersModule,
     AuthModule,
