@@ -1,9 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { Article } from './entities/article.entity';
-import { ILike } from 'typeorm';
+import { ARTICLE_REPOSITORY } from '../database/repositories/interfaces/article.repository.interface';
 
 const mockArticle: Article = {
   id: 1,
@@ -13,12 +12,11 @@ const mockArticle: Article = {
 };
 
 const mockRepository = {
-  find: jest.fn(),
-  findOneBy: jest.fn(),
-  findAndCount: jest.fn(),
+  findAll: jest.fn(),
+  findById: jest.fn(),
   create: jest.fn(),
-  save: jest.fn(),
   update: jest.fn(),
+  save: jest.fn(),
   delete: jest.fn(),
 };
 
@@ -30,7 +28,7 @@ describe('ArticlesService', () => {
       providers: [
         ArticlesService,
         {
-          provide: getRepositoryToken(Article),
+          provide: ARTICLE_REPOSITORY,
           useValue: mockRepository,
         },
       ],
@@ -40,67 +38,43 @@ describe('ArticlesService', () => {
     jest.clearAllMocks();
   });
 
-  // describe('findAll', () => {
-  //   it('should return all articles', async () => {
-  //     mockRepository.find.mockResolvedValue([mockArticle]);
-  //     const result = await service.findAll();
-  //     expect(result).toEqual([mockArticle]);
-  //     expect(mockRepository.find).toHaveBeenCalledTimes(1);
-  //   });
-  // });
-
   describe('findAll', () => {
     it('should return paginated', async () => {
-      const mockArticles = [mockArticle];
-      const mockTotal = 1;
-
-      mockRepository.findAndCount.mockResolvedValue([mockArticles, mockTotal]);
+      mockRepository.findAll.mockResolvedValue({ data: [mockArticle], total: 1 });
 
       const result = await service.findAll(1, 10, '');
 
       expect(result).toEqual({
-        data: mockArticles,
-        total: mockTotal,
+        data: [mockArticle],
+        total: 1,
         page: 1,
         limit: 10,
-        totalPages: 1, // Math.ceil(1 / 10)
+        totalPages: 1,
       });
 
-      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
-        where: {},
-        take: 10,
-        skip: 0,
-        order: { id: 'DESC' },
-      });
+      expect(mockRepository.findAll).toHaveBeenCalledWith(1, 10, '');
     });
 
     it('search filter applied', async () => {
-      const mockArticles = [mockArticle];
-      const mockTotal = 1;
       const searchTerm = 'laptop';
 
-      mockRepository.findAndCount.mockResolvedValue([mockArticles, mockTotal]);
+      mockRepository.findAll.mockResolvedValue({ data: [mockArticle], total: 1 });
 
       await service.findAll(1, 10, searchTerm);
 
-      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
-        where: { name: ILike(`%${searchTerm}%`) },
-        take: 10,
-        skip: 0,
-        order: { id: 'DESC' },
-      });
+      expect(mockRepository.findAll).toHaveBeenCalledWith(1, 10, searchTerm);
     });
   });
 
   describe('findOne', () => {
     it('should return article by id', async () => {
-      mockRepository.findOneBy.mockResolvedValue(mockArticle);
+      mockRepository.findById.mockResolvedValue(mockArticle);
       const result = await service.findOne(1);
       expect(result).toEqual(mockArticle);
     });
 
     it('should throw NotFoundException if article not found', async () => {
-      mockRepository.findOneBy.mockResolvedValue(null);
+      mockRepository.findById.mockResolvedValue(null);
       await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
     });
   });
@@ -120,18 +94,18 @@ describe('ArticlesService', () => {
 
   describe('update', () => {
     it('should update and return article', async () => {
-      mockRepository.findOneBy.mockResolvedValue(mockArticle);
-      mockRepository.update.mockResolvedValue(undefined);
       const updated = { ...mockArticle, quantity: 5 };
-      mockRepository.findOneBy
+      mockRepository.findById
         .mockResolvedValueOnce(mockArticle)
         .mockResolvedValueOnce(updated);
+      mockRepository.update.mockResolvedValue(undefined);
+      
       const result = await service.update(1, { quantity: 5 });
       expect(result.quantity).toBe(5);
     });
 
     it('should throw NotFoundException if article not found', async () => {
-      mockRepository.findOneBy.mockResolvedValue(null);
+      mockRepository.findById.mockResolvedValue(null);
       await expect(service.update(999, { quantity: 5 })).rejects.toThrow(
         NotFoundException,
       );
@@ -140,13 +114,13 @@ describe('ArticlesService', () => {
 
   describe('remove', () => {
     it('should delete article', async () => {
-      mockRepository.findOneBy.mockResolvedValue(mockArticle);
+      mockRepository.findById.mockResolvedValue(mockArticle);
       mockRepository.delete.mockResolvedValue(undefined);
       await expect(service.remove(1)).resolves.not.toThrow();
     });
 
     it('should throw NotFoundException if article not found', async () => {
-      mockRepository.findOneBy.mockResolvedValue(null);
+      mockRepository.findById.mockResolvedValue(null);
       await expect(service.remove(999)).rejects.toThrow(NotFoundException);
     });
   });

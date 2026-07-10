@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { USER_REPOSITORY } from '../database/repositories/interfaces/user.repository.interface';
 import { User } from './entities/user.entity';
 
 describe('UsersService', () => {
@@ -11,9 +11,10 @@ describe('UsersService', () => {
       providers: [
         UsersService,
         {
-          provide: getRepositoryToken(User),
+          provide: USER_REPOSITORY,
           useValue: {
-            findOneBy: jest.fn(),
+            findByEmail: jest.fn(),
+            findByWalletAddress: jest.fn(),
             create: jest.fn(),
             save: jest.fn(),
           },
