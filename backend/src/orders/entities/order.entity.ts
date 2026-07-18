@@ -30,7 +30,7 @@ export class Order {
   @Column({ type: 'varchar', nullable: true })
   txHash!: string | null;
 
-  @OneToMany(() => OrderItem, (item) => item.order, {
+  @OneToMany('OrderItem', (item: any) => item.order, {
     cascade: true,
     eager: true,
   })
