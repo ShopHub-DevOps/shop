@@ -27,6 +27,20 @@ services:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      # Required - the app fails to boot without it (ConfigService.getOrThrow).
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required, copy .env.example to .env}
+      # Crypto payment verification (Sepolia testnet).
+      SHOP_WALLET_ADDRESS: ${SHOP_WALLET_ADDRESS:-}
+      RPC_URL: ${RPC_URL:-https://ethereum-sepolia-rpc.publicnode.com}
+      CHAIN_ID: ${CHAIN_ID:-11155111}
+      # Owner auth - a JWT whose email/wallet matches these gets the admin role.
+      SHOP_OWNER_EMAIL: ${SHOP_OWNER_EMAIL:-}
+      WALLET_ADDRESS: ${WALLET_ADDRESS:-}
+      # Database tier: unset/standard -> PostgreSQL, light -> Redis.
+      SHOP_DB_TIER: ${SHOP_DB_TIER:-standard}
+      # Observability.
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
     ports:
       - "${BACKEND_PORT:-8080}:3000"
     depends_on:
